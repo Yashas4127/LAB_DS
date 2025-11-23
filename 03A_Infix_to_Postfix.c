@@ -1,42 +1,97 @@
 #include <stdio.h>
 #include <ctype.h>
-#include <string.h>
+#define MAXSIZE 25
 
-#define MAX 100
+typedef struct
+{
+    char items[MAXSIZE];
+    int top;
+} STACK;
 
-char stack[MAX];
-int top = -1;
-
-void push(char x){ stack[++top] = x; }
-char pop(){ return top == -1 ? -1 : stack[top--]; }
-
-int priority(char x){
-    if(x=='+'||x=='-') return 1;
-    if(x=='*'||x=='/') return 2;
-    if(x=='^') return 3;
-    return 0;
+void PUSH(STACK *s, char data)
+{
+    s->items[++s->top] = data;
 }
 
-int main(){
-    char infix[100], postfix[100], ch;
-    int i=0,k=0;
+char POP(STACK *s)
+{
+    return s->items[s->top--];
+}
 
+char PEEK(STACK *s)
+{
+    return s->items[s->top];
+}
+
+int preced(char symb)
+{
+    switch (symb)
+    {
+    case '#':
+    case '(':
+        return 0;
+    case '+':
+    case '-':
+        return 1;
+    case '*':
+    case '/':
+    case '%':
+        return 2;
+    case '^':
+        return 3;
+    default:
+        return -1;
+    }
+}
+
+int main()
+{
+    STACK s;
+    char infix[30], postfix[30], symb;
+    int i, j = 0;
+
+    s.top = -1;
+    PUSH(&s, '#');
+
+    printf("Enter infix expression : ");
     scanf("%s", infix);
 
-    while((ch=infix[i++])!='\0'){
-        if(isalnum(ch)) postfix[k++] = ch;
-        else if(ch=='(') push(ch);
-        else if(ch==')'){
-            while((ch=pop())!='(') postfix[k++] = ch;
-        } else {
-            while(top!=-1 && priority(stack[top])>=priority(ch))
-                postfix[k++] = pop();
-            push(ch);
+    for (i = 0; infix[i] != '\0'; i++)
+    {
+        symb = infix[i];
+
+        if (isalnum(symb))
+            postfix[j++] = symb;
+
+        else if (symb == '(')
+            PUSH(&s, symb);
+
+        else if (symb == ')')
+        {
+            char x = POP(&s);
+            while (x != '(')
+            {
+                postfix[j++] = x;
+                x = POP(&s);
+            }
+        }
+
+        else
+        {
+            while (preced(symb) <= preced(PEEK(&s)))
+            {
+                postfix[j++] = POP(&s);
+            }
+            PUSH(&s, symb);
         }
     }
-    while(top!=-1) postfix[k++] = pop();
-    postfix[k]='\0';
 
-    printf("%s\n", postfix);
+    while (PEEK(&s) != '#')
+        postfix[j++] = POP(&s);
+
+    postfix[j] = '\0';
+
+    printf("\nPostfix expression = %s\n", postfix);
+
     return 0;
 }
