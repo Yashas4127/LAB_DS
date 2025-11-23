@@ -1,62 +1,97 @@
 #include <stdio.h>
-#include <ctype.h>
 #include <string.h>
+#include <ctype.h>
+#define MAX 50
 
-#define MAX 100
+typedef struct {
+    char items[MAX];
+    int top;
+} STACK;
 
-char stack[MAX];
-int top=-1;
-
-void push(char x){ stack[++top]=x; }
-char pop(){ return top==-1?-1:stack[top--]; }
-
-int priority(char x){
-    if(x=='+'||x=='-') return 1;
-    if(x=='*'||x=='/') return 2;
-    if(x=='^') return 3;
-    return 0;
+void PUSH(STACK *s, char data) {
+    s->items[++s->top] = data;
 }
 
-void reverse(char s[]){
-    int i=0,j=strlen(s)-1;
-    char t;
-    while(i<j){ t=s[i]; s[i]=s[j]; s[j]=t; i++; j--; }
+char POP(STACK *s) {
+    return s->items[s->top--];
 }
 
-void swapBrackets(char s[]){
-    int i;
-    for(i=0;s[i];i++){
-        if(s[i]=='(') s[i]=')';
-        else if(s[i]==')') s[i]='(';
+char PEEK(STACK *s) {
+    return s->items[s->top];
+}
+
+int preced(char c) {
+    switch (c) {
+        case '#':
+        case ')': return 0;    // after reversing, ) acts like (
+        case '+':
+        case '-': return 1;
+        case '*':
+        case '/': return 2;
+        case '^': return 3;
+    }
+    return -1;
+}
+
+void reverse(char *exp) {
+    int i = 0, j = strlen(exp) - 1;
+    char temp;
+    while (i < j) {
+        temp = exp[i];
+        exp[i] = exp[j];
+        exp[j] = temp;
+        i++; j--;
     }
 }
 
-void infixToPostfix(char in[], char out[]){
-    int i=0,k=0; char ch;
-    top=-1;
-    while((ch=in[i++])){
-        if(isalnum(ch)) out[k++]=ch;
-        else if(ch=='(') push(ch);
-        else if(ch==')'){
-            while((ch=pop())!='(') out[k++]=ch;
-        } else {
-            while(top!=-1 && priority(stack[top])>=priority(ch))
-                out[k++]=pop();
-            push(ch);
+int main() {
+    STACK s;
+    char infix[50], prefix[50], symb, x;
+    int i, j = 0;
+
+    s.top = -1;
+    PUSH(&s, '#');
+
+    printf("Enter Infix: ");
+    scanf("%s", infix);
+
+    reverse(infix);
+
+    // swap brackets
+    for (i = 0; infix[i] != '\0'; i++) {
+        if (infix[i] == '(') infix[i] = ')';
+        else if (infix[i] == ')') infix[i] = '(';
+    }
+
+    for (i = 0; infix[i] != '\0'; i++) {
+        symb = infix[i];
+
+        if (isalnum(symb)) {
+            prefix[j++] = symb;
+        }
+        else if (symb == '(') {
+            PUSH(&s, symb);
+        }
+        else if (symb == ')') {
+            while (PEEK(&s) != '(')
+                prefix[j++] = POP(&s);
+            POP(&s);  // pop '('
+        }
+        else { // operator
+            while (preced(symb) < preced(PEEK(&s))) {
+                prefix[j++] = POP(&s);
+            }
+            PUSH(&s, symb);
         }
     }
-    while(top!=-1) out[k++]=pop();
-    out[k]='\0';
-}
 
-int main(){
-    char infix[100], rev[100], post[100];
-    scanf("%s", infix);
-    strcpy(rev, infix);
-    reverse(rev);
-    swapBrackets(rev);
-    infixToPostfix(rev, post);
-    reverse(post);
-    printf("%s\n", post);
+    while (PEEK(&s) != '#')
+        prefix[j++] = POP(&s);
+
+    prefix[j] = '\0';
+    reverse(prefix);
+
+    printf("Prefix: %s\n", prefix);
+
     return 0;
 }
