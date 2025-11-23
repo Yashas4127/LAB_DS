@@ -50,53 +50,46 @@ float evaluatePostfix(char postfix[])
         bigTab[k] = -999;
     }
 
-    while ((sym = postfix[i]) != '\0')
+    for (int i = 0; postfix[i] != '\0'; i++)
     {
-        if (sym==' ' || sym=='\n' || sym=='\t' || sym=='\r')
-        {
-            i++;
-            continue;
-        }
+    char sym = postfix[i];
 
-        if (sym >= '0' && sym <= '9')
-        {
-            stack[++top] = sym - '0';
-        }
-        else if (sym >= 'a' && sym <= 'z')
-        {
-            j = sym - 'a';
-            if (smalTab[j] == -999)
-            {
-                printf("Enter value of %c: ", sym);
-                scanf("%f", &smalTab[j]);
-            }
-            stack[++top] = smalTab[j];
-        }
-        else if (sym >= 'A' && sym <= 'Z')
-        {
-            j = sym - 'A';
-            if (bigTab[j] == -999)
-            {
-                printf("Enter value of %c: ", sym);
-                scanf("%f", &bigTab[j]);
-            }
-            stack[++top] = bigTab[j];
-        }
-        else
-        {
-            if (top < 1)
-            {
-                printf("Invalid postfix expression!\n");
-                exit(1);
-            }
-            float op2 = stack[top--];
-            float op1 = stack[top--];
-            float val = eval(op1, op2, sym);
-            stack[++top] = val;
-        }
+    if (sym==' ' || sym=='\n' || sym=='\t' || sym=='\r')
+        continue;
 
-        i++;
+    if (sym >= '0' && sym <= '9')
+    {
+        stack[++top] = sym - '0';
     }
+    else if (sym >= 'a' && sym <= 'z')
+    {
+        j = sym - 'a';
+        if (smalTab[j] == -999)
+        {
+            printf("Enter value of %c: ", sym);
+            scanf("%f", &smalTab[j]);
+        }
+        stack[++top] = smalTab[j];
+    }
+    else if (sym >= 'A' && sym <= 'Z')
+    {
+        j = sym - 'A';
+        if (bigTab[j] == -999)
+        {
+            printf("Enter value of %c: ", sym);
+            scanf("%f", &bigTab[j]);
+        }
+        stack[++top] = bigTab[j];
+    }
+    else
+    {
+        float op2 = stack[top--];
+        float op1 = stack[top--];
+        float val = eval(op1, op2, sym);
+        stack[++top] = val;
+    }
+}
+
 
     if (top == 0) return stack[top];
 
