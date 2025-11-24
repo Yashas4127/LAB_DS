@@ -1,82 +1,110 @@
 #include <stdio.h>
-#include <stdlib.h>
 
 #define MAX 100
 
-int stack[MAX];
-int top = -1;
+typedef struct {
+    int items[MAX];
+    int top;
+} STACK;
 
-void push(int x) {
-    if (top == MAX - 1) {
-        printf("Overflow\n");
-        return;
-    }
-    stack[++top] = x;
+// Initialize stack
+void init(STACK *s) {
+    s->top = -1;
 }
 
-int pop() {
-    if (top == -1) {
-        printf("Underflow\n");
+// Push
+void push(STACK *s, int val) {
+    if (s->top == MAX - 1) {
+        printf("Stack Overflow!\n");
+        return;
+    }
+    s->items[++s->top] = val;
+}
+
+// Pop
+int pop(STACK *s) {
+    if (s->top == -1) {
+        printf("Stack Underflow!\n");
         return -1;
     }
-    return stack[top--];
+    return s->items[s->top--];
 }
 
-void display() {
-    if (top == -1) {
-        printf("Empty\n");
+// Display stack
+void display(STACK *s) {
+    if (s->top == -1) {
+        printf("Stack is empty.\n");
         return;
     }
-    for (int i = top; i >= 0; i--)
-        printf("%d ", stack[i]);
+    printf("Stack (top → bottom): ");
+    for (int i = s->top; i >= 0; i--)
+        printf("%d ", s->items[i]);
     printf("\n");
 }
 
-void checkPalindrome() {
-    if (top == -1) {
-        printf("Empty\n");
-        return;
-    }
-    int i = 0, j = top, flag = 1;
+/* ------------------------------------
+   Check if STACK ELEMENTS form palindrome
+------------------------------------- */
+int isStackPalindrome(STACK *s) {
+    if (s->top == -1) return 1; // empty = palindrome
+
+    int i = 0, j = s->top;
+
+    // Compare items like checking array palindrome
     while (i < j) {
-        if (stack[i] != stack[j]) {
-            flag = 0;
-            break;
-        }
+        if (s->items[i] != s->items[j])
+            return 0;  // Not palindrome
         i++;
         j--;
     }
-    if (flag) printf("Palindrome\n");
-    else printf("Not Palindrome\n");
+    return 1;  // Palindrome
 }
 
 int main() {
-    int choice, x;
+    STACK s;
+    init(&s);
+
+    int choice, val;
 
     while (1) {
-        printf("1.Push\n2.Pop\n3.Display\n4.Check Palindrome\n5.Exit\n");
+        printf("\n--- MENU ---\n");
+        printf("1. Push\n");
+        printf("2. Pop\n");
+        printf("3. Display\n");
+        printf("4. Check if STACK is Palindrome\n");
+        printf("5. Exit\n");
         printf("Enter choice: ");
         scanf("%d", &choice);
 
         switch (choice) {
             case 1:
-                printf("Enter value: ");
-                scanf("%d", &x);
-                push(x);
+                printf("Enter value to push: ");
+                scanf("%d", &val);
+                push(&s, val);
                 break;
+
             case 2:
-                pop();
+                val = pop(&s);
+                if (val != -1)
+                    printf("Popped: %d\n", val);
                 break;
+
             case 3:
-                display();
+                display(&s);
                 break;
+
             case 4:
-                checkPalindrome();
+                if (isStackPalindrome(&s))
+                    printf("STACK is a Palindrome.\n");
+                else
+                    printf("STACK is NOT a Palindrome.\n");
                 break;
+
             case 5:
                 return 0;
+
             default:
-                printf("Invalid\n");
+                printf("Invalid choice!\n");
         }
     }
 }
